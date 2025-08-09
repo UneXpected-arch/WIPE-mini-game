@@ -1,0 +1,49 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIPE: Catch The Gains</title>
+<style>
+  :root { --bg:#0f2342; --tile:#122b52; --accent:#19d38b; --gold:#f6c445; --text:#f7f7f7; }
+  html,body { margin:0; height:100%; background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; color:var(--text); }
+  #ui { position:fixed; inset:0; pointer-events:none; }
+  .hud { position:absolute; left:16px; top:12px; font-weight:700; text-shadow:0 2px 6px rgba(0,0,0,.35); }
+  .hud span { margin-right:16px; }
+  .center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; }
+  .panel { pointer-events:auto; background:rgba(18,43,82,.9); border:1px solid rgba(255,255,255,.12);
+           border-radius:16px; padding:24px 20px; max-width:520px; }
+  button { pointer-events:auto; cursor:pointer; border:0; border-radius:12px; padding:12px 18px; font-weight:700; }
+  .primary { background:var(--accent); color:#061b2c; }
+  canvas { display:block; width:100%; height:100vh; image-rendering:pixelated; background:
+    radial-gradient(1200px 600px at 50% -10%, #1c396b 0%, #0f2342 60%),
+    repeating-linear-gradient(0deg, var(--tile), var(--tile) 28px, #0f2342 28px, #0f2342 56px); }
+  .credits { position:absolute; right:12px; bottom:10px; font-size:12px; opacity:.7 }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="ui">
+  <div class="hud"><span id="score">Score: 0</span><span id="combo">Combo: x1</span><span id="lives">Lives: 3</span></div>
+  <div id="start" class="center">
+    <div class="panel">
+      <h1>WIPE: Catch the Gains 🧻💰</h1>
+      <p>Move the TP roll to <b>catch coins</b>.<br>Miss 3 and it’s <i>game over</i>.</p>
+      <p>Controls: <b>Drag / Touch</b> or <b>← →</b></p>
+      <button id="startBtn" class="primary">Start</button>
+    </div>
+  </div>
+  <div id="gameover" class="center" style="display:none;">
+    <div class="panel">
+      <h2>Flushed… 💀</h2>
+      <p id="final"></p>
+      <button id="again" class="primary">Play Again</button>
+    </div>
+  </div>
+  <div class="credits">WIPE mini-game demo</div>
+</div>
+<script>
+(()=>{const e=document.getElementById("game"),t=e.getContext("2d"),n=(e,t)=>Math.random()*(t-e)+e,o=(e,t,n)=>Math.max(t,Math.min(n,e));function a(){e.width=window.innerWidth,e.height=window.innerHeight}window.addEventListener("resize",a,{passive:!0}),a();const i={running:!1,over:!1,score:0,combo:1,lives:3,best:0,time:0,spawnTimer:0,spawnRate:800,speed:220,coins:[],tp:{x:window.innerWidth*.5,y:window.innerHeight-90,w:180,h:36,vx:0}},s=document.getElementById("score"),d=document.getElementById("combo"),l=document.getElementById("lives"),r=document.getElementById("start"),c=document.getElementById("startBtn"),m=document.getElementById("gameover"),h=document.getElementById("final"),u=document.getElementById("again");function p(){i.score=0,i.combo=1,i.lives=3,i.coins.length=0,i.time=0,i.spawnTimer=0,i.spawnRate=800,i.speed=220,i.tp.x=e.width/2}function g(){p(),i.running=!0,i.over=!1,r.style.display="none",m.style.display="none",y=performance.now(),requestAnimationFrame(f)}function v(){i.running=!1,i.over=!0,i.best=Math.max(i.best,i.score),h.textContent=`Score: ${i.score}  •  Best: ${i.best}`,m.style.display="flex"}c.onclick=g,u.onclick=g;let w=!1,S=0;e.addEventListener("pointerdown",(t=>{const n=t.clientX;n>i.tp.x-i.tp.w/2&&n<i.tp.x+i.tp.w/2?(w=!0,S=n-i.tp.x):(w=!0,S=0)})),window.addEventListener("pointermove",(e=>{w&&(i.tp.x=o(e.clientX-S,i.tp.w/2,e.width-i.tp.w/2))})),window.addEventListener("pointerup",(()=>w=!1));const b={};function x(e,t){const n=o(e.x,t.x-t.w/2,t.x+t.w/2),a=o(e.y,t.y-t.h/2,t.y+t.h/2),i=e.x-n,s=e.y-a;return i*i+s*s<=e.r*e.r}window.addEventListener("keydown",(e=>{b[e.key]=!0})),window.addEventListener("keyup",(e=>{b[e.key]=!1}));function L(){const e=Math.random()<.08;i.coins.push({x:n(40,canvas.width-40),y:-30,r:e?24:18,v:i.speed*(e?.95:1),type:e?"diamond":"gold",rot:n(0,2*Math.PI)})}function E(e){const n=e.x,o=e.y,a=e.w,i=e.h;t.save(),t.translate(n,o),t.fillStyle="#f1f4f8",t.strokeStyle="rgba(0,0,0,.25)",t.lineWidth=2,t.beginPath(),t.roundRect(-a/2,-i/2,a,i,18),t.fill(),t.stroke(),t.fillStyle="#b8894d",t.beginPath(),t.ellipse(-.35*a,0,14,14,0,0,2*Math.PI),t.fill(),t.fillStyle="rgba(0,0,0,.15)",t.font="bold 18px system-ui",t.textAlign="center",t.fillText("WIPE",0,6),t.restore()}function T(e){t.save(),t.translate(e.x,e.y),t.rotate(e.rot),"diamond"===e.type?(t.fillStyle="#b6f0ff",t.strokeStyle="#88d7ea",t.lineWidth=3,t.beginPath(),t.moveTo(0,-e.r),t.lineTo(.9*e.r,0),t.lineTo(0,e.r),t.lineTo(-.9*e.r,0),t.closePath(),t.fill(),t.stroke(),t.fillStyle="#0a3a4a",t.font="bold 12px system-ui",t.textAlign="center",t.fillText("+100",0,4)):((()=>{const n=t.createRadialGradient(-5,-5,4,0,0,e.r+6);n.addColorStop(0,"#fff5b2"),n.addColorStop(1,"#f6c445"),t.fillStyle=n,t.strokeStyle="#b98513",t.lineWidth=3,t.beginPath(),t.arc(0,0,e.r,0,2*Math.PI),t.fill(),t.stroke(),t.fillStyle="#7f5a0a",t.font="bold 14px system-ui",t.textAlign="center",t.fillText("$",0,5)})()),t.restore()}let y=0;function f(nc){if(!i.running)return;const a=Math.min(32,nc-y)/1e3;y=nc,i.time+=a,i.spawnTimer+=1e3*a,i.speed+=6*a,i.spawnRate=Math.max(260,i.spawnRate-8*a),i.spawnTimer>i.spawnRate&&(i.spawnTimer=0,L()),b.ArrowLeft&&(i.tp.x-=420*a),b.ArrowRight&&(i.tp.x+=420*a),i.tp.x=o(i.tp.x,i.tp.w/2,canvas.width-i.tp.w/2);for(let e=i.coins.length-1;e>=0;e--){const t=i.coins[e];t.y+=t.v*a,t.rot+=("diamond"===t.type?2.2:1.4)*a,x(t,i.tp)?(i.score+=("diamond"===t.type?100:10)*i.combo,i.combo=Math.min(10,i.combo+1),i.coins.splice(e,1)):t.y-t.r>canvas.height&&(i.lives-=1,i.combo=1,i.coins.splice(e,1),i.lives<=0&&v())}t.clearRect(0,0,canvas.width,canvas.height),t.save(),t.globalAlpha=.15;for(let n=0;n<60;n++){const o=97*n%canvas.width,a=53*n%canvas.height;t.fillStyle=n%7?"#ffffff":"#a7d0ff",t.fillRect(o,a,2,2)}t.restore(),t.fillStyle="rgba(0,0,0,.15)",t.fillRect(0,canvas.height-6,canvas.width,6),i.coins.forEach(T),E(i.tp),s.textContent=`Score: ${i.score}`,d.textContent=`Combo: x${i.combo}`,l.textContent=`Lives: ${i.lives}`,requestAnimationFrame(f)};})();
+</script>
+</body>
+</html>
